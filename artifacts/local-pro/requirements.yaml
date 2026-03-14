@@ -1,0 +1,25 @@
+packages:
+  "framer-motion": "For page transitions, smooth enter animations, and micro-interactions"
+  "recharts": "For the worker dashboard earnings chart"
+  "date-fns": "For formatting booking dates and times nicely"
+  "react-hook-form": "For robust form state management in booking and registration"
+  "@hookform/resolvers": "For Zod validation integration with react-hook-form"
+  "zod": "For form validation schemas"
+  "clsx": "For class name merging"
+  "tailwind-merge": "For tailwind class merging in UI components"
+
+images:
+  - path: "artifacts/local-pro/public/images/hero-community.png"
+    description: "Vibrant, abstract illustration of diverse skilled workers (plumber, electrician, tutor) in a friendly community setting. Warm orange and yellow tones, modern vector art style, clean background."
+    aspect_ratio: "16:9"
+  - path: "artifacts/local-pro/public/images/emergency-bg.png"
+    description: "Abstract dynamic geometric background in deep red and crimson with subtle warning siren visual motifs, conveying urgency but maintaining a modern clean tech aesthetic."
+    aspect_ratio: "16:9"
+  - path: "artifacts/local-pro/public/images/dashboard-bg.png"
+    description: "Soft, clean gradient mesh in warm amber and peach colors, suitable for a dashboard header background."
+    aspect_ratio: "3:4"
+
+notes:
+  - "Assuming @workspace/api-client-react provides all necessary hooks and schemas."
+  - "No auth implemented; relying on form inputs for user details and URL parameters for worker dashboard access."
+  - "Using Lucide React for all UI iconography."

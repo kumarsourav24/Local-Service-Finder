@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "LocalPro - Local Services Platform"
+version = "1.0.0"
+id = "artifacts/local-pro"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+localPort = 19871
+name = "web"
+paths = ["/"]
+
+[services.development]
+run = "pnpm --filter @workspace/local-pro run dev"
+
+[services.env]
+PORT = "19871"
+BASE_PATH = "/"
+
+[services.production]
+build = ["pnpm", "--filter", "@workspace/local-pro", "run", "build"]
+publicDir = "artifacts/local-pro/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"

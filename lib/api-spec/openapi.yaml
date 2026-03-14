@@ -1,15 +1,22 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: LocalPro - Local Services Platform API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: workers
+    description: Worker profile operations
+  - name: bookings
+    description: Booking operations
+  - name: reviews
+    description: Review operations
+  - name: categories
+    description: Service category operations
 paths:
   /healthz:
     get:
@@ -24,6 +31,274 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /categories:
+    get:
+      operationId: getCategories
+      tags: [categories]
+      summary: Get all service categories
+      responses:
+        "200":
+          description: List of categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Category"
+
+  /workers:
+    get:
+      operationId: getWorkers
+      tags: [workers]
+      summary: Search for workers
+      parameters:
+        - in: query
+          name: category
+          schema:
+            type: string
+          description: Filter by skill category
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Search by name or skill
+        - in: query
+          name: lat
+          schema:
+            type: number
+          description: User latitude for distance calculation
+        - in: query
+          name: lng
+          schema:
+            type: number
+          description: User longitude for distance calculation
+        - in: query
+          name: emergency
+          schema:
+            type: boolean
+          description: Filter for emergency-available workers
+      responses:
+        "200":
+          description: List of workers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/WorkerSummary"
+    post:
+      operationId: registerWorker
+      tags: [workers]
+      summary: Register as a worker
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateWorkerRequest"
+      responses:
+        "201":
+          description: Worker registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Worker"
+
+  /workers/{workerId}:
+    get:
+      operationId: getWorker
+      tags: [workers]
+      summary: Get a worker's full profile
+      parameters:
+        - in: path
+          name: workerId
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Worker profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Worker"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /workers/{workerId}/availability:
+    get:
+      operationId: getWorkerAvailability
+      tags: [workers]
+      summary: Get available time slots for a worker
+      parameters:
+        - in: path
+          name: workerId
+          required: true
+          schema:
+            type: integer
+        - in: query
+          name: date
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: Available slots
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TimeSlot"
+
+  /bookings:
+    get:
+      operationId: getBookings
+      tags: [bookings]
+      summary: Get all bookings (for dashboard)
+      parameters:
+        - in: query
+          name: workerId
+          schema:
+            type: integer
+          description: Filter by worker ID
+        - in: query
+          name: userId
+          schema:
+            type: string
+          description: Filter by user ID
+      responses:
+        "200":
+          description: List of bookings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Booking"
+    post:
+      operationId: createBooking
+      tags: [bookings]
+      summary: Create a new booking
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateBookingRequest"
+      responses:
+        "201":
+          description: Booking created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+
+  /bookings/{bookingId}:
+    get:
+      operationId: getBooking
+      tags: [bookings]
+      summary: Get a booking by ID
+      parameters:
+        - in: path
+          name: bookingId
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Booking detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+    patch:
+      operationId: updateBookingStatus
+      tags: [bookings]
+      summary: Update booking status
+      parameters:
+        - in: path
+          name: bookingId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateBookingStatusRequest"
+      responses:
+        "200":
+          description: Updated booking
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+
+  /reviews:
+    get:
+      operationId: getReviews
+      tags: [reviews]
+      summary: Get reviews for a worker
+      parameters:
+        - in: query
+          name: workerId
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of reviews
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Review"
+    post:
+      operationId: createReview
+      tags: [reviews]
+      summary: Submit a review for a worker
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateReviewRequest"
+      responses:
+        "201":
+          description: Review created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Review"
+
+  /workers/{workerId}/dashboard:
+    get:
+      operationId: getWorkerDashboard
+      tags: [workers]
+      summary: Get worker dashboard stats
+      parameters:
+        - in: path
+          name: workerId
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Dashboard data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkerDashboard"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +309,387 @@ components:
       required:
         - status
 
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    Category:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        icon:
+          type: string
+        description:
+          type: string
+      required:
+        - id
+        - name
+        - icon
+        - description
+
+    WorkerSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        category:
+          type: string
+        categoryId:
+          type: string
+        experience:
+          type: integer
+        rating:
+          type: number
+        reviewCount:
+          type: integer
+        pricePerHour:
+          type: number
+        serviceArea:
+          type: string
+        distance:
+          type: number
+          nullable: true
+        isAvailableEmergency:
+          type: boolean
+        isOnline:
+          type: boolean
+        avatarUrl:
+          type: string
+          nullable: true
+        bio:
+          type: string
+      required:
+        - id
+        - name
+        - category
+        - categoryId
+        - experience
+        - rating
+        - reviewCount
+        - pricePerHour
+        - serviceArea
+        - isAvailableEmergency
+        - isOnline
+        - bio
+
+    Worker:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        category:
+          type: string
+        categoryId:
+          type: string
+        experience:
+          type: integer
+        rating:
+          type: number
+        reviewCount:
+          type: integer
+        pricePerHour:
+          type: number
+        serviceArea:
+          type: string
+        distance:
+          type: number
+          nullable: true
+        isAvailableEmergency:
+          type: boolean
+        isOnline:
+          type: boolean
+        avatarUrl:
+          type: string
+          nullable: true
+        bio:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        lat:
+          type: number
+        lng:
+          type: number
+        completedJobs:
+          type: integer
+        skills:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - name
+        - category
+        - categoryId
+        - experience
+        - rating
+        - reviewCount
+        - pricePerHour
+        - serviceArea
+        - isAvailableEmergency
+        - isOnline
+        - bio
+        - phone
+        - email
+        - lat
+        - lng
+        - completedJobs
+        - skills
+        - createdAt
+
+    CreateWorkerRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        categoryId:
+          type: string
+        experience:
+          type: integer
+        pricePerHour:
+          type: number
+        serviceArea:
+          type: string
+        bio:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        lat:
+          type: number
+        lng:
+          type: number
+        isAvailableEmergency:
+          type: boolean
+        skills:
+          type: array
+          items:
+            type: string
+      required:
+        - name
+        - categoryId
+        - experience
+        - pricePerHour
+        - serviceArea
+        - bio
+        - phone
+        - email
+        - lat
+        - lng
+
+    TimeSlot:
+      type: object
+      properties:
+        time:
+          type: string
+        available:
+          type: boolean
+      required:
+        - time
+        - available
+
+    Booking:
+      type: object
+      properties:
+        id:
+          type: integer
+        workerId:
+          type: integer
+        workerName:
+          type: string
+        workerCategory:
+          type: string
+        userId:
+          type: string
+        userName:
+          type: string
+        userPhone:
+          type: string
+        serviceDate:
+          type: string
+        serviceTime:
+          type: string
+        address:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+          enum: [pending, confirmed, in_progress, completed, cancelled]
+        totalAmount:
+          type: number
+        paymentMethod:
+          type: string
+          enum: [upi, card, cash]
+        isEmergency:
+          type: boolean
+        createdAt:
+          type: string
+      required:
+        - id
+        - workerId
+        - workerName
+        - workerCategory
+        - userId
+        - userName
+        - userPhone
+        - serviceDate
+        - serviceTime
+        - address
+        - description
+        - status
+        - totalAmount
+        - paymentMethod
+        - isEmergency
+        - createdAt
+
+    CreateBookingRequest:
+      type: object
+      properties:
+        workerId:
+          type: integer
+        userId:
+          type: string
+        userName:
+          type: string
+        userPhone:
+          type: string
+        serviceDate:
+          type: string
+        serviceTime:
+          type: string
+        address:
+          type: string
+        description:
+          type: string
+        paymentMethod:
+          type: string
+          enum: [upi, card, cash]
+        isEmergency:
+          type: boolean
+      required:
+        - workerId
+        - userId
+        - userName
+        - userPhone
+        - serviceDate
+        - serviceTime
+        - address
+        - description
+        - paymentMethod
+
+    UpdateBookingStatusRequest:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [pending, confirmed, in_progress, completed, cancelled]
+      required:
+        - status
+
+    Review:
+      type: object
+      properties:
+        id:
+          type: integer
+        workerId:
+          type: integer
+        userId:
+          type: string
+        userName:
+          type: string
+        rating:
+          type: integer
+        comment:
+          type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - workerId
+        - userId
+        - userName
+        - rating
+        - comment
+        - createdAt
+
+    CreateReviewRequest:
+      type: object
+      properties:
+        workerId:
+          type: integer
+        userId:
+          type: string
+        userName:
+          type: string
+        rating:
+          type: integer
+        comment:
+          type: string
+        bookingId:
+          type: integer
+      required:
+        - workerId
+        - userId
+        - userName
+        - rating
+        - comment
+
+    WorkerDashboard:
+      type: object
+      properties:
+        workerId:
+          type: integer
+        totalEarnings:
+          type: number
+        totalJobs:
+          type: integer
+        completedJobs:
+          type: integer
+        pendingJobs:
+          type: integer
+        averageRating:
+          type: number
+        recentBookings:
+          type: array
+          items:
+            $ref: "#/components/schemas/Booking"
+        weeklyEarnings:
+          type: array
+          items:
+            $ref: "#/components/schemas/EarningsData"
+      required:
+        - workerId
+        - totalEarnings
+        - totalJobs
+        - completedJobs
+        - pendingJobs
+        - averageRating
+        - recentBookings
+        - weeklyEarnings
+
+    EarningsData:
+      type: object
+      properties:
+        day:
+          type: string
+        earnings:
+          type: number
+      required:
+        - day
+        - earnings
